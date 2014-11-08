@@ -27,6 +27,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.Console;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -72,6 +74,9 @@ public class ForecastFragment extends Fragment {
             fetchTask.execute("Monterrey,mx");
             return true;
         }
+        if(id == R.id.action_settings){
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -89,9 +94,8 @@ public class ForecastFragment extends Fragment {
                 "Monday - Sunny - 87/63"
         };
 
-        //for bragging rights:
+        //convert array into a list
         List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
-
 
         //create adapter to fetch that data, assign its layout, and send it to the corresponding
         //textview
@@ -102,6 +106,9 @@ public class ForecastFragment extends Fragment {
                         R.id.list_item_forecast_textview,  //ID of the textview to populate
                         weekForecast); //forecast data
 
+        FetchWeatherTask fetchTask = new FetchWeatherTask();
+        fetchTask.execute("Monterrey,mx");
+
         //get a reference to the ListView, attach this adapter to
         //transition from ForecastFragment to DetailActivity
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -111,13 +118,10 @@ public class ForecastFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String forecast = mForecastAdapter.getItem(position);
 
-                Context context = getActivity();
-                int duration = Toast.LENGTH_SHORT;
-
-                Toast toast = Toast.makeText(context, forecast, duration);
+                Toast toast = Toast.makeText(getActivity(), forecast, Toast.LENGTH_SHORT);
                 toast.show();
 
-                Intent detailIntent = new Intent(context, DetailActivity.class)
+                Intent detailIntent = new Intent(getActivity(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT,forecast);
                 startActivity(detailIntent);
             }

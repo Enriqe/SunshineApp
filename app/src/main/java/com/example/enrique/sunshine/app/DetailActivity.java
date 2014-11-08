@@ -1,5 +1,6 @@
 package com.example.enrique.sunshine.app;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class DetailActivity extends ActionBarActivity {
@@ -43,6 +45,8 @@ public class DetailActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            Intent intSettings = new Intent(this, SettingsActivity.class);
+            startActivity(intSettings);
             return true;
         }
         return super.onOptionsItemSelected(item);
