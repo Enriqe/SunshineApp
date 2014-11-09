@@ -8,6 +8,7 @@ package com.example.enrique.sunshine.app;
         import android.preference.PreferenceManager;
         import android.view.KeyEvent;
 
+
         import static com.example.enrique.sunshine.app.R.xml.pref_general;
 
 /**
@@ -24,6 +25,7 @@ public class SettingsActivity extends PreferenceActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.pref_general);
 
