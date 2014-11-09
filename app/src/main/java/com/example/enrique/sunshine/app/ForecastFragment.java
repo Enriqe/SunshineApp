@@ -6,9 +6,12 @@ package com.example.enrique.sunshine.app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -70,8 +73,8 @@ public class ForecastFragment extends Fragment {
 
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            FetchWeatherTask fetchTask = new FetchWeatherTask();
-            fetchTask.execute("Monterrey,mx");
+            updateWeather();
+
             return true;
         }
         if(id == R.id.action_settings){
@@ -83,19 +86,6 @@ public class ForecastFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-        //create dummy data to populate the text view
-        String[] forecastArray = {
-                "Today - Sunny - 87/63",
-                "Tomorrow - Cloudy -  87/63",
-                "Saturday - Sunny - 87/63",
-                "Sunday - Cloudy - 87/63",
-                "Monday - Sunny - 87/63"
-        };
-
-        //convert array into a list
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
 
         //create adapter to fetch that data, assign its layout, and send it to the corresponding
         //textview
@@ -104,16 +94,16 @@ public class ForecastFragment extends Fragment {
                         getActivity(), //context (this parents activity)
                         R.layout.list_item_forecast,  //ID of list item layout
                         R.id.list_item_forecast_textview,  //ID of the textview to populate
-                        weekForecast); //forecast data
+                        new ArrayList<String>()); //forecast data
 
-        FetchWeatherTask fetchTask = new FetchWeatherTask();
-        fetchTask.execute("Monterrey,mx");
+        View rootView = inflater.inflate(R.layout.fragment_main,container,false);
 
         //get a reference to the ListView, attach this adapter to
         //transition from ForecastFragment to DetailActivity
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String forecast = mForecastAdapter.getItem(position);
@@ -128,6 +118,22 @@ public class ForecastFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    private void updateWeather(){
+        FetchWeatherTask fetchTask = new FetchWeatherTask();
+
+        //get data from preferences from user input to featch weather data
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = prefs.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
+
+        fetchTask.execute(location);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        updateWeather();
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
@@ -149,6 +155,20 @@ public class ForecastFragment extends Fragment {
          * Prepare the weather high/lows for presentation.
          */
         private String formatHighLows(double high, double low) {
+            //data is fetched in celsius by default, if user wants to change to farenheit we do
+            //the conversion here rather than having to fetch again for the celsius converison
+
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType = sharedPrefs.getString(getString(R.string.pref_units_key),getString(R.string.pref_units_metric));
+
+            if(unitType.equals(getString(R.string.pref_units_imperial))){
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            }
+            else if (!unitType.equals(getString(R.string.pref_units_metric))){
+                Log.d(LOG_TAG, "Unit type not found: " + unitType);
+            }
+
             // For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
